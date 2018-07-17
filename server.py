@@ -143,13 +143,16 @@ storage_tables = {
             'ownerid': FieldValue('IntValue', 100000001),
             'recordid': FieldValue('IntValue', 0),
             'ViewMyProfile': FieldValue('IntValue', 0),
-            'EmailAddress': FieldValue('AsciiStringValue', 'nobody@example.com'),
+            'EmailAddress': FieldValue('AsciiStringValue', '<not available here yet>'),
             'ViewMyEmail': FieldValue('IntValue', 0),
             'AccountCreationDate': FieldValue('DateAndTimeValue', (2018, 1, 1, 0, 0, 0, 0, 0, 0)),
             'LastGameDate': FieldValue('DateAndTimeValue', (2018, 1, 1, 0, 0, 0, 0, 0, 0)),
             'CampaignsCompleted': FieldValue('ByteValue', 0),
             'NickName': FieldValue('AsciiStringValue', 'mynick'),
         }
+    ],
+
+    'PlayerStats_v1': [
     ]
 }
 
@@ -160,10 +163,13 @@ class StorageServerImpl(StorageServer):
             request = ps.Parse(SearchForRecordsSoapIn.typecode)
             log.msg('[[**]] SearchForRecords table: %s' % request.Tableid)
             log.msg('[[**]] filter: %s' % str(request.Filter))
+            log.msg('[[**]] targetfilter: %s' % str(request.Targetfilter))
             result = SearchForRecordsSoapOut()
             result.SearchForRecordsResult = result.new_SearchForRecordsResult('Success')
             result.Values = result.new_values()
             result.Values.ArrayOfRecordValue = []
+
+            log.msg('[[**]] fields: %s' % ', '.join(request.Fields.String))
     
             table = storage_tables.get(request.Tableid, [])
 
@@ -176,8 +182,6 @@ class StorageServerImpl(StorageServer):
                 # Construct a field object to return
                 field_values = []
                 for field in request.Fields.String:
-                    log.msg('[[**]] - field: %s' % field)
-                    
                     field_value = record_value.new_RecordValue()
                     if field in record:
                         record[field].to_soap_record(field_value)
@@ -241,6 +245,10 @@ class StorageServerImpl(StorageServer):
         except Exception as ex:
             logging.exception('[[**]] soap_UpdateRecord failed')
 
+class CompetitionServiceImpl(CompetitionService):
+
+    pass
+
 class WebServer(Site):
     def __init__(self):
         root = Resource()
@@ -252,6 +260,10 @@ class WebServer(Site):
         storageService = Resource()
         storageService.putChild('StorageServer.asmx', StorageServerImpl())
         root.putChild('SakeStorageServer', storageService)
+
+        competitionService = Resource()
+        competitionService.putChild('CompetitionService.asmx', CompetitionServiceImpl())
+        root.putChild('CompetitionService', competitionService)
 
         motd_service = Resource()
         motd_service.putChild('motd.asp', BlankPage())
