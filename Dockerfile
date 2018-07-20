@@ -22,7 +22,8 @@ RUN wget https://github.com/Zenchreal/ZSI/archive/master.zip -O /usr/src/ZSI.zip
     && python setup.py build \
     && python setup.py install
 
-COPY . /usr/src/rising-eagle-soap/
+COPY server.py /usr/src/rising-eagle-soap/
+COPY soap/ /usr/src/rising-eagle-soap/soap/
 
 RUN python -m compileall /usr/src/rising-eagle-soap/ \
     && cd /usr/src/rising-eagle-soap/ \

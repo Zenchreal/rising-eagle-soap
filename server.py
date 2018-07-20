@@ -21,7 +21,7 @@ from twisted.python import log
 class BlankPage(Resource):
     isLeaf = True
     def render_GET(self, request):
-        return ''
+        return 'No message of the day'
 
 class AuthServiceImpl(AuthService):
 
